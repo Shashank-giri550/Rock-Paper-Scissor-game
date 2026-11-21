@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rock Paper Scissors</title>
+<link rel="stylesheet" href="first.css">
+</head>
+<body>
+  <div class="card">
+    <h1>✊ ✋ ✌️ Rock Paper Scissors</h1>
+
+    <!-- Setup screen -->
+    <div id="setup">
+      <p>How many rounds do you want to play?</p><br>
+      <input type="number" id="roundsInput" value="3" min="1">
+      <button id="startBtn">Start</button>
+      <p class="error" id="error"></p>
+    </div>
+
+    <!-- Game screen -->
+    <div id="game" class="hidden">
+      <p id="roundLabel"></p>
+      <div class="choices">
+        <button data-choice="rock">Rock</button>
+        <button data-choice="paper">Paper</button>
+        <button data-choice="scissors">Scissors</button>
+      </div>
+      <div class="scoreboard">
+        <div>You<span id="playerScore">0</span></div>
+        <div>Computer<span id="computerScore">0</span></div>
+      </div>
+      <p class="info" id="picks"></p>
+      <p class="info" id="result"></p>
+    </div>
+
+    <!-- End screen -->
+    <div id="end" class="hidden">
+      <h2 id="finalScore"></h2>
+      <p class="info" id="finalResult"></p><br>
+      <button id="againBtn">Play Again</button>
+    </div>
+  </div>
+
+<script>
+  const CHOICES = ["rock", "paper", "scissors"];
+  let totalRounds = 0, currentRound = 1, playerScore = 0, computerScore = 0;
+
+  const $ = (id) => document.getElementById(id);
+
+  function decideWinner(player, computer) {
+    if (player === computer) return "draw";
+    if (
+      (player === "rock" && computer === "scissors") ||
+      (player === "scissors" && computer === "paper") ||
+      (player === "paper" && computer === "rock")
+    ) return "player";
+    return "computer";
+  }
+
+  function show(id) {
+    ["setup", "game", "end"].forEach((s) => $(s).classList.add("hidden"));
+    $(id).classList.remove("hidden");
+  }
+
+  function updateRoundLabel() {
+    $("roundLabel").textContent = `Round ${currentRound} of ${totalRounds}`;
+  }
+
+  $("startBtn").addEventListener("click", () => {
+    const n = parseInt($("roundsInput").value, 10);
+    if (isNaN(n) || n < 1) {
+      $("error").textContent = "Please enter a whole number of at least 1.";
+      return;
+    }
+    $("error").textContent = "";
+    totalRounds = n;
+    currentRound = 1;
+    playerScore = 0;
+    computerScore = 0;
+    $("playerScore").textContent = 0;
+    $("computerScore").textContent = 0;
+    $("picks").textContent = "";
+    $("result").textContent = "";
+    updateRoundLabel();
+    show("game");
+  });
+
+  document.querySelectorAll("[data-choice]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const player = btn.dataset.choice;
+      const computer = CHOICES[Math.floor(Math.random() * CHOICES.length)];
+      const result = decideWinner(player, computer);
+
+      $("picks").textContent = `You chose ${player}, Computer chose ${computer}`;
+      const r = $("result");
+      if (result === "player") {
+        playerScore++;
+        r.textContent = "You win this round!";
+        r.className = "info win";
+      } else if (result === "computer") {
+        computerScore++;
+        r.textContent = "Computer wins this round!";
+        r.className = "info lose";
+      } else {
+        r.textContent = "It's a draw!";
+        r.className = "info draw";
+      }
+      $("playerScore").textContent = playerScore;
+      $("computerScore").textContent = computerScore;
+
+      if (currentRound === totalRounds) {
+        setTimeout(endGame, 900);
+      } else {
+        currentRound++;
+        updateRoundLabel();
+      }
+    });
+  });
+
+  function endGame() {
+    $("finalScore").textContent = `Final Score - You: ${playerScore} | Computer: ${computerScore}`;
+    const f = $("finalResult");
+    if (playerScore > computerScore) {
+      f.textContent = "You win the game! 🎉";
+      f.className = "info win";
+    } else if (computerScore > playerScore) {
+      f.textContent = "Computer wins the game!";
+      f.className = "info lose";
+    } else {
+      f.textContent = "The game is a draw!";
+      f.className = "info draw";
+    }
+    show("end");
+  }
+
+  $("againBtn").addEventListener("click", () => show("setup"));
+</script>
+</body>
+</html>
